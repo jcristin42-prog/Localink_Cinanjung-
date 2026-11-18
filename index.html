@@ -1,0 +1,653 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cinanjung Localink</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: app shell. Sidebar on desktop, bottom tab bar on phone. Six views switched by hash. */
+:root{
+  --bg:#F2F6F1; --surface:#FFFFFF; --surface2:#E8EFE6; --fg:#14261D; --muted:#4F6358; --line:#D3DFD0;
+  --deep:#0F3D2E; --deep-fg:#EAF5EC; --leaf:#2E8B4A; --sage:#A9BFA8; --warn:#B45309; --warn-bg:#FBEBD3; --bad:#B42318;
+  --ok-bg:#DDF2E1; --focus:#1D6FD1;
+  --display:'Bricolage Grotesque','Trebuchet MS',sans-serif; --body:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1812; --surface:#13241B; --surface2:#1A3024; --fg:#E6F1E8; --muted:#9DB5A4; --line:#27402F;
+  --deep:#1B5A43; --deep-fg:#EAF5EC; --leaf:#5DC47A; --sage:#7E9C82; --warn:#F2B25C; --warn-bg:#3A2A10; --bad:#FF8A7A; --ok-bg:#183626; --focus:#7DB4F5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1812; --surface:#13241B; --surface2:#1A3024; --fg:#E6F1E8; --muted:#9DB5A4; --line:#27402F;
+  --deep:#1B5A43; --deep-fg:#EAF5EC; --leaf:#5DC47A; --sage:#7E9C82; --warn:#F2B25C; --warn-bg:#3A2A10; --bad:#FF8A7A; --ok-bg:#183626; --focus:#7DB4F5; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);margin:0}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,5vw,38px);font-weight:700}
+h2{font-size:22px;font-weight:700}
+h3{font-size:16px;font-weight:700}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.side{background:var(--deep);color:var(--deep-fg);padding:22px 14px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;display:flex;flex-direction:column;gap:18px;
+  padding-left:max(14px,env(safe-area-inset-left,0px))}
+.brand{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.1;padding:0 8px}
+.brand small{display:block;font:500 11px var(--body);letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:6px}
+nav{display:flex;flex-direction:column;gap:2px}
+nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:inherit;text-decoration:none;font-weight:500;opacity:.88}
+nav a:hover{background:rgba(255,255,255,.08)}
+nav a[aria-current="page"]{background:rgba(255,255,255,.16);opacity:1}
+nav svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile{margin-top:auto;font-size:13px;background:rgba(255,255,255,.08);border-radius:10px;padding:12px}
+.profile b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:4px}
+main{min-width:0;padding:28px 32px 48px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1100px;width:100%}
+.view{display:none;flex-direction:column;gap:22px}
+.view.on{display:flex}
+.lead{color:var(--muted);max-width:62ch}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--surface2);color:var(--muted)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.ok{background:var(--ok-bg);color:var(--leaf)}
+.demo{font-size:13px;color:var(--warn);background:var(--warn-bg);padding:8px 12px;border-radius:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.hero{background:var(--deep);color:var(--deep-fg);border-radius:16px;padding:28px;display:grid;gap:18px}
+.hero p{max-width:60ch;opacity:.9}
+.metrics{display:flex;flex-wrap:wrap;gap:12px}
+.metric{background:rgba(255,255,255,.1);border-radius:10px;padding:12px 16px;min-width:130px}
+.metric b{font:700 28px var(--display);display:block;font-variant-numeric:tabular-nums}
+.metric span{font-size:12px;opacity:.85}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--leaf);color:#fff;text-decoration:none}
+.btn.alt{background:var(--surface2);color:var(--fg)}
+.btn.line{background:transparent;border:1px solid var(--line);color:var(--fg)}
+.hero .btn{background:var(--sage);color:#0F3D2E}
+.btn:hover{filter:brightness(1.08)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 13px;cursor:pointer;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--deep);color:var(--deep-fg);border-color:var(--deep)}
+label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:13px}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0;width:100%}
+.form{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.form .full{grid-column:1/-1}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{flex-direction:row;align-items:center;gap:8px;font-weight:500;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface)}
+.checks input{width:auto}
+.avatar{width:44px;height:44px;border-radius:10px;background:var(--surface2);color:var(--deep);display:grid;place-items:center;font:700 16px var(--display);flex:none}
+.umkm{display:flex;flex-direction:column;gap:10px}
+.umkm .top{display:flex;gap:12px;align-items:center}
+.umkm .top div{min-width:0}
+.umkm small{color:var(--muted)}
+.table{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--surface2)}
+tr:last-child td{border-bottom:0}
+td input{min-width:90px}
+.num{text-align:right}
+.best{background:var(--ok-bg)}
+.gap{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.dots{display:flex;flex-wrap:wrap;gap:3px;margin:10px 0}
+.dots i{width:9px;height:9px;border-radius:2px;background:var(--sage)}
+.dots i.keep{background:var(--leaf)}
+.big{font:700 40px var(--display);font-variant-numeric:tabular-nums}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:14px;overflow-x:auto}
+.chat{display:flex;flex-direction:column;gap:10px;max-height:460px;overflow-y:auto;padding:4px}
+.msg{max-width:min(92%,640px);padding:11px 14px;border-radius:12px;white-space:pre-wrap}
+.msg.u{align-self:flex-end;background:var(--deep);color:var(--deep-fg)}
+.msg.a{align-self:flex-start;background:var(--surface2)}
+.msg .meta{display:block;margin-top:8px;font-size:12px;color:var(--warn)}
+.msg .go{margin-top:8px}
+.input-row{display:flex;gap:8px}
+.bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--leaf)}
+.sum{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.sum .card b{font:700 22px var(--display);display:block;font-variant-numeric:tabular-nums}
+.pos{color:var(--leaf)}.neg{color:var(--bad)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:8px 16px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--deep);color:var(--deep-fg)}
+.rec{display:flex;gap:12px;align-items:flex-start}
+.rec .score{font:700 20px var(--display);width:48px;flex:none;text-align:center;color:var(--leaf)}
+@media (max-width:899px){
+  .shell{display:block}
+  .side{position:fixed;inset:auto 0 0 0;top:auto;height:auto;flex-direction:row;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:20;
+    padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+  .brand,.profile{display:none}
+  nav{flex-direction:row;width:100%;justify-content:space-between}
+  nav a{flex-direction:column;gap:2px;font-size:10px;padding:6px 2px;flex:1;text-align:center;min-width:0}
+  main{padding-top:20px;padding-bottom:96px}
+  .hero{padding:20px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  /* ===== TAMBAHAN: GERAK DAN ELEMEN MENGAMBANG ===== */
+[hidden]{display:none!important}
+:root{--on-leaf:#FFFFFF}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--on-leaf:#0C1812}}
+:root[data-theme="dark"]{--on-leaf:#0C1812}
+.btn:not(.alt):not(.line){color:var(--on-leaf)}
+.hero .btn:not(.alt):not(.line){color:#0F3D2E}
+
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(26px,-18px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes leaf{0%,100%{transform:translate(0,0) rotate(-8deg)}50%{transform:translate(10px,-16px) rotate(10deg)}}
+@keyframes ring{0%{box-shadow:0 10px 24px -10px rgba(0,0,0,.45),0 0 0 0 rgba(46,139,74,.5)}100%{box-shadow:0 10px 24px -10px rgba(0,0,0,.45),0 0 0 18px rgba(46,139,74,0)}}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+/* layar dan kartu muncul bergantian */
+.view.on>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*60ms)}
+.grid>*{animation:pop .45s cubic-bezier(.2,.7,.2,1) backwards}
+.grid>*:nth-child(1){animation-delay:.08s}.grid>*:nth-child(2){animation-delay:.13s}.grid>*:nth-child(3){animation-delay:.18s}
+.grid>*:nth-child(4){animation-delay:.23s}.grid>*:nth-child(5){animation-delay:.28s}.grid>*:nth-child(6){animation-delay:.33s}
+.grid>*:nth-child(n+7){animation-delay:.38s}
+.msg{animation:pop .3s backwards}
+.bar i{transform-origin:left;animation:grow .9s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:.15s}
+.sum .card b{animation:pop .4s backwards}
+#katPane,#admPane{animation:rise .35s backwards}
+
+/* hover dan sentuhan */
+.card{transition:transform .2s ease-out,box-shadow .2s,border-color .2s}
+.umkm:hover{box-shadow:0 14px 28px -14px rgba(0,0,0,.4);border-color:var(--sage)}
+.btn{transition:transform .15s,filter .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.chip{transition:background-color .2s,color .2s,border-color .2s,transform .15s}
+.chip:active{transform:scale(.96)}
+input,select,textarea{transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--leaf);box-shadow:0 0 0 3px var(--ok-bg)}
+nav svg{transition:transform .2s}
+nav a:hover svg{transform:scale(1.14)}
+tbody tr{transition:background-color .35s}
+
+/* kotak hijau beranda: bola warna, daun, kartu angka mengambang */
+.hero{position:relative;overflow:hidden}
+.hero>*:not(.leaf){position:relative;z-index:1}
+.hero::before,.hero::after{content:"";position:absolute;z-index:0;border-radius:50%;filter:blur(44px);opacity:.32;pointer-events:none;animation:drift 12s ease-in-out infinite}
+.hero::before{width:280px;height:280px;right:-60px;top:-80px;background:var(--leaf)}
+.hero::after{width:220px;height:220px;right:22%;bottom:-120px;background:var(--sage);animation-delay:-5s}
+.leaf{position:absolute;z-index:0;color:var(--sage);opacity:.55;pointer-events:none;animation:leaf 8s ease-in-out infinite}
+.leaf svg{display:block;width:100%;height:auto}
+.metric{backdrop-filter:blur(6px);animation:bob 5s ease-in-out infinite}
+.metric:nth-child(2){animation-delay:-1.6s}
+.metric:nth-child(3){animation-delay:-3.2s}
+
+/* bola warna melayang di latar seluruh halaman */
+.shell{position:relative;z-index:1}
+.bgfloat{position:fixed;z-index:0;border-radius:50%;filter:blur(70px);opacity:.25;pointer-events:none;animation:drift 16s ease-in-out infinite}
+.bgfloat.a{width:360px;height:360px;left:12%;top:8%;background:var(--sage)}
+.bgfloat.b{width:300px;height:300px;right:6%;bottom:6%;background:var(--leaf);animation-delay:-7s}
+
+/* garis progres scroll */
+#prog{position:fixed;top:env(safe-area-inset-top,0px);left:0;height:3px;width:0;background:var(--leaf);z-index:40;transition:width .1s}
+
+/* tombol mengambang */
+.fab{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:25;display:flex;align-items:center;gap:8px;background:var(--leaf);color:var(--on-leaf);border-radius:99px;padding:13px 18px;font-weight:600;text-decoration:none;box-shadow:0 10px 24px -10px rgba(0,0,0,.45);animation:bob 4s ease-in-out infinite,ring 2.4s ease-out infinite}
+.fab:hover{filter:brightness(1.08)}
+.fab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fab.off{display:none}
+@media (max-width:899px){.fab{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+
+/* titik mengetik di chat */
+.typing{display:flex;gap:5px;padding:14px 16px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}
+.typing i:nth-child(3){animation-delay:.3s}
+
+/* hormati pengguna yang mematikan animasi */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand">Cinanjung Localink<small>Pendampingan UMKM berbasis AI</small></div>
+    <nav id="nav" aria-label="Menu utama"></nav>
+    <div class="profile" id="profileBox"><b>Profil aktif</b>Belum ada. Isi Diagnostik Usaha agar rekomendasi sesuai.</div>
+  </aside>
+
+  <main>
+    <!-- 1. BERANDA -->
+    <section class="view" id="v-beranda">
+      <div class="hero">
+        <span class="tag" style="justify-self:start;background:rgba(255,255,255,.14);color:var(--deep-fg)">Prototype, data contoh</span>
+        <h1>Satu platform, rekomendasi berbeda untuk tiap UMKM Cinanjung.</h1>
+        <p>Mulai dari profil usaha, lanjut ke asisten AI, perencana kemasan, catatan keuangan, dan katalog produk desa.</p>
+        <div class="metrics">
+          <div class="metric"><b>±50</b><span>UMKM desa</span></div>
+          <div class="metric"><b>65</b><span>kader kewirausahaan</span></div>
+          <div class="metric"><b>500</b><span>MOQ pouch, kasus Coboy Product</span></div>
+        </div>
+        <div class="row"><a class="btn" href="#diagnostik">Mulai diagnostik usaha</a><a class="btn alt" href="#kemasan">Coba perencana kemasan</a></div>
+      </div>
+      <div class="row" style="justify-content:space-between">
+        <h2>Direktori UMKM</h2>
+        <div class="chips" id="catFilter" role="group" aria-label="Filter kategori"></div>
+      </div>
+      <div class="grid g3" id="dir"></div>
+      <p class="demo">.</p>
+    </section>
+
+    <!-- 2. DIAGNOSTIK -->
+    <section class="view" id="v-diagnostik">
+      <div><h1>Diagnostik Usaha</h1><p class="lead" style="margin-top:8px">Jawab beberapa pertanyaan. Sistem menyusun urutan modul yang paling relevan untuk usaha Anda.</p></div>
+      <form class="card form" id="diagForm">
+        <label>Nama usaha<input id="d-nama" required value="Coboy Product"></label>
+        <label>Kategori usaha<select id="d-kat"><option>Makanan/minuman</option><option>Herbal</option><option>Kerajinan</option><option>Lainnya</option></select></label>
+        <label>Produk utama<input id="d-produk" value="Produk dalam kemasan pouch"></label>
+        <label>Produksi per bulan (unit)<input id="d-prod" type="number" min="0" value="100"></label>
+        <div class="full"><label style="margin-bottom:6px">Kendala yang dirasakan</label>
+          <div class="checks" id="d-needs">
+            <label><input type="checkbox" value="kemasan" checked>Kemasan dan MOQ</label>
+            <label><input type="checkbox" value="branding">Branding dan identitas produk</label>
+            <label><input type="checkbox" value="pemasaran" checked>Pemasaran</label>
+            <label><input type="checkbox" value="pencatatan" checked>Pencatatan keuangan</label>
+            <label><input type="checkbox" value="informasi">Informasi produk belum lengkap</label>
+          </div></div>
+        <label>Pencatatan saat ini<select id="d-rec"><option value="manual">Manual / buku tulis</option><option value="sebagian">Sebagian dicatat</option><option value="rapi">Sudah terstruktur</option></select></label>
+        <label>Pemasaran saat ini<select id="d-mkt"><option value="lisan">Dari mulut ke mulut</option><option value="sosmed">Media sosial seadanya</option><option value="aktif">Aktif dan terjadwal</option></select></label>
+        <div class="full row"><button class="btn" type="submit">Lihat rekomendasi</button><span class="tag">Hasil disimpan di perangkat ini</span></div>
+      </form>
+      <div id="diagOut"></div>
+    </section>
+
+    <!-- 3. AI -->
+    <section class="view" id="v-ai">
+      <div><h1>Localink AI</h1><p class="lead" style="margin-top:8px">Asisten bisnis yang membaca profil usaha Anda. Prototype ini memakai jawaban terskrip untuk memperlihatkan alurnya.</p></div>
+      <div class="chips" id="quick"></div>
+      <div class="card"><div class="chat" id="chat" aria-live="polite"></div></div>
+      <form class="input-row" id="chatForm"><input id="chatIn" placeholder="Tulis pertanyaan tentang usaha Anda" autocomplete="off" aria-label="Pertanyaan"><button class="btn" type="submit">Kirim</button></form>
+      <div class="card"><h3>Batas jawaban AI</h3>
+        <p class="lead" style="margin-top:6px">AI tidak mengarang harga vendor, nomor izin, masa kedaluwarsa, nilai gizi, atau klaim kesehatan. Semua hasil harus diperiksa pemilik usaha atau admin sebelum dipakai atau dipublikasikan.</p></div>
+    </section>
+
+    <!-- 4. KEMASAN -->
+    <section class="view" id="v-kemasan">
+      <div><h1>Smart Packaging Planner</h1><p class="lead" style="margin-top:8px">Bandingkan empat jalur pengadaan kemasan sebelum memesan. Dibuat dari kendala Coboy Product: cetak minimal 500 pouch, kebutuhan percobaan sekitar 100 pouch.</p></div>
+      <div class="gap">
+        <div class="card"><span class="tag">MOQ cetak khusus</span><div class="big">500</div><div class="dots" id="dots500"></div><small style="color:var(--muted)">Kuantitas minimum yang disampaikan narasumber</small></div>
+        <div class="card"><span class="tag ok">Kebutuhan percobaan</span><div class="big" id="needBig">100</div><div class="dots" id="dots100"></div><small style="color:var(--muted)">Selisih kuantitas <b id="gapPct">80%</b>. Ini selisih jumlah, bukan penghematan biaya.</small></div>
+      </div>
+      <div class="card form">
+        <label>Jenis produk<input id="p-jenis" value="Produk dalam kemasan pouch"></label>
+        <label>Kebutuhan percobaan (pouch)<input id="p-need" type="number" min="1" value="100"></label>
+        <label>Perkiraan terjual per bulan<input id="p-sales" type="number" min="1" value="50"></label>
+      </div>
+      <p class="demo">.</p>
+      <div class="table"><table id="ptable"></table></div>
+      <div class="card"><h3>Rumus</h3>
+        <div class="formula" style="margin-top:10px">TC = (Q × P) + S + D<br>C_unit = TC ÷ Q</div>
+        <p class="lead" style="margin-top:10px;font-size:13px">TC total biaya kemasan, Q jumlah pouch, P harga per pouch, S biaya setup atau tambahan, D biaya pengiriman. Pada pembelian kolektif, biaya Anda adalah porsi sesuai jumlah pouch yang Anda ambil.</p></div>
+      <div id="pverdict"></div>
+    </section>
+
+    <!-- 5. CATATAN -->
+    <section class="view" id="v-catatan">
+      <div><h1>Catatan Usaha</h1><p class="lead" style="margin-top:8px">Catat pemasukan dan pengeluaran, lalu hitung HPP dan harga jual.</p></div>
+      <div class="sum" id="sum"></div>
+      <form class="card form" id="txForm">
+        <label>Keterangan<input id="t-desc" required placeholder="{id:1,nama:'Coboy Product',kat:'Makanan/minuman',produk:'(isi jenis produk sebenarnya)',pilot:'Pilot kemasan',ok:true,real:true,foto:'coboy.jpg'}: penjualan di pasar"></label>
+        <label>Jenis<select id="t-type"><option value="in">Pemasukan</option><option value="out">Pengeluaran</option></select></label>
+        <label>Jumlah (Rp)<input id="t-amt" type="number" min="1" required placeholder="50000"></label>
+        <div class="full"><button class="btn" type="submit">Tambah catatan</button></div>
+      </form>
+      <div class="table"><table id="txTable"></table></div>
+      <div class="card">
+        <h3>Kalkulator HPP</h3>
+        <div class="form" style="margin-top:12px">
+          <label>Bahan baku per batch (Rp)<input class="hpp" id="h-bahan" type="number" min="0" value="150000"></label>
+          <label>Tenaga kerja per batch (Rp)<input class="hpp" id="h-kerja" type="number" min="0" value="50000"></label>
+          <label>Kemasan per batch (Rp)<input class="hpp" id="h-kemas" type="number" min="0" value="60000"></label>
+          <label>Biaya lain per batch (Rp)<input class="hpp" id="h-lain" type="number" min="0" value="20000"></label>
+          <label>Unit dihasilkan per batch<input class="hpp" id="h-unit" type="number" min="1" value="50"></label>
+          <label>Target margin (%)<input class="hpp" id="h-margin" type="number" min="0" value="30"></label>
+        </div>
+        <div class="sum" id="hppOut" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- 6. KATALOG & ADMIN -->
+    <section class="view" id="v-katalog">
+      <div class="row" style="justify-content:space-between">
+        <div><h1>Katalog dan Admin</h1><p class="lead" style="margin-top:8px">Produk tampil di katalog setelah diverifikasi admin lokal.</p></div>
+        <div class="seg" role="group" aria-label="Mode"><button id="m-kat" aria-pressed="true">Katalog</button><button id="m-adm" aria-pressed="false">Admin</button></div>
+      </div>
+      <div id="katPane"><div class="grid g3" id="katGrid"></div></div>
+      <div id="admPane" hidden>
+        <div class="card" style="margin-bottom:14px"><h3>Antrean verifikasi</h3><div id="queue" style="margin-top:10px;display:grid;gap:8px"></div></div>
+        <div class="card"><div class="row" style="justify-content:space-between"><h3>KPI pilot</h3><span class="tag warn">Target, bukan capaian. Progres adalah data contoh</span></div><div id="kpi" style="display:grid;gap:12px;margin-top:12px"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+var rp=function(n){return 'Rp'+Math.round(n).toLocaleString('id-ID')};
+var $=function(id){return document.getElementById(id)};
+var I={
+ beranda:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ diagnostik:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM8 12h8M8 16h5"/>',
+ ai:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+ kemasan:'<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+ catatan:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h4"/>',
+ katalog:'<path d="M4 9l1-5h14l1 5M4 9v11h16V9M4 9a3 3 0 0 0 5 0 3 3 0 0 0 6 0 3 3 0 0 0 5 0"/>'
+};
+var NAV=[['beranda','Beranda'],['diagnostik','Diagnostik'],['ai','Localink AI'],['kemasan','Kemasan'],['catatan','Catatan'],['katalog','Katalog']];
+$('nav').innerHTML=NAV.map(function(n){return '<a href="#'+n[0]+'" data-v="'+n[0]+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+I[n[0]]+'</svg>'+n[1]+'</a>'}).join('');
+
+/* ---------- state ---------- */
+var S={profile:null,cat:'Semua',
+ umkm:[
+  {id:1,nama:'Coboy Product',kat:'Makanan/minuman',produk:'Produk dalam kemasan pouch',pilot:'Pilot kemasan',ok:true,real:true},
+  {id:2,nama:'KWT Malati Asih',kat:'Herbal',produk:'Health Tea, Daun Bidara',pilot:'Pilot produk Bidara',ok:true,real:true},
+  {id:3,nama:'UMKM Contoh A',kat:'Kerajinan',produk:'Anyaman bambu (contoh)',pilot:'',ok:true},
+  {id:4,nama:'UMKM Contoh B',kat:'Makanan/minuman',produk:'Keripik singkong (contoh)',pilot:'',ok:false},
+  {id:5,nama:'UMKM Contoh C',kat:'Herbal',produk:'Jamu seduh (contoh)',pilot:'',ok:false},
+  {id:6,nama:'UMKM Contoh D',kat:'Lainnya',produk:'Jasa jahit (contoh)',pilot:'',ok:true}],
+ tx:[
+  {d:'02 Jan',t:'Penjualan di pasar',k:'in',a:185000},
+  {d:'03 Jan',t:'Belanja bahan baku',k:'out',a:120000},
+  {d:'05 Jan',t:'Pesanan reseller',k:'in',a:240000},
+  {d:'06 Jan',t:'Biaya kemasan',k:'out',a:60000}],
+ opts:[
+  {n:'A. Cetak khusus, MOQ penuh',d:'Pouch desain sendiri dari vendor cetak.',q:500,p:1200,s:250000,k:50000,share:false},
+  {n:'B. Kemasan standar + label',d:'Pouch polos siap pakai, ditambah stiker.',q:100,p:1200,s:0,k:30000,share:false},
+  {n:'C. Vendor MOQ lebih rendah',d:'Hanya jika ada vendor yang menyediakan.',q:100,p:2000,s:150000,k:40000,share:false},
+  {n:'D. Pembelian kolektif',d:'Pesan 500 bersama UMKM lain, ambil sesuai kebutuhan.',q:500,p:1200,s:250000,k:50000,share:true}]
+};
+try{var sv=localStorage.getItem('localink-profile');if(sv)S.profile=JSON.parse(sv)}catch(e){}
+
+/* ---------- routing ---------- */
+function route(){
+  var h=(location.hash||'#beranda').slice(1);
+  if(!I[h])h='beranda';
+  document.querySelectorAll('.view').forEach(function(v){v.classList.toggle('on',v.id==='v-'+h)});
+  document.querySelectorAll('nav a').forEach(function(a){if(a.dataset.v===h)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+
+/* ---------- beranda ---------- */
+function renderDir(){
+  var cats=['Semua','Makanan/minuman','Herbal','Kerajinan','Lainnya'];
+  $('catFilter').innerHTML=cats.map(function(c){return '<button class="chip" aria-pressed="'+(S.cat===c)+'" data-c="'+c+'">'+c+'</button>'}).join('');
+  $('catFilter').querySelectorAll('button').forEach(function(b){b.onclick=function(){S.cat=b.dataset.c;renderDir()}});
+  $('dir').innerHTML=S.umkm.filter(function(u){return S.cat==='Semua'||u.kat===S.cat}).map(function(u){
+    return '<div class="card umkm"><div class="top"><div class="avatar">'+u.nama.charAt(0)+'</div><div><h3>'+u.nama+'</h3><small>'+u.kat+'</small></div></div>'+
+    '<p>'+u.produk+'</p><div class="row">'+(u.pilot?'<span class="tag ok">'+u.pilot+'</span>':'')+(u.real?'':'<span class="tag warn">Contoh</span>')+'</div></div>'}).join('');
+}
+
+/* ---------- diagnostik ---------- */
+function diagnose(p){
+  var sc={kemasan:20,branding:20,pemasaran:20,pencatatan:20,informasi:20};
+  p.needs.forEach(function(n){sc[n]+=45});
+  if(p.rec==='manual')sc.pencatatan+=25;if(p.rec==='sebagian')sc.pencatatan+=10;
+  if(p.mkt==='lisan')sc.pemasaran+=25;if(p.mkt==='sosmed')sc.pemasaran+=10;
+  if(p.kat==='Herbal'){sc.informasi+=15;sc.branding+=10}
+  if(p.kat==='Makanan/minuman')sc.kemasan+=10;
+  if(p.kat==='Kerajinan')sc.branding+=15;
+  var meta={
+   kemasan:['Smart Packaging Planner','Bandingkan MOQ, kemasan standar dengan label, vendor alternatif, dan pembelian kolektif.','kemasan'],
+   branding:['Asisten Branding','Susun identitas produk, cerita, dan deskripsi.','ai'],
+   pemasaran:['Asisten Pemasaran','Buat caption dan rencana promosi sesuai kapasitas.','ai'],
+   pencatatan:['Catatan Usaha','Catat transaksi mingguan dan hitung HPP.','catatan'],
+   informasi:['Profil Produk di Katalog','Lengkapi informasi produk lalu minta verifikasi admin.','katalog']};
+  return Object.keys(sc).map(function(k){return {k:k,s:Math.min(100,sc[k]),m:meta[k]}}).sort(function(a,b){return b.s-a.s});
+}
+function renderDiag(){
+  if(!S.profile){$('diagOut').innerHTML='';return}
+  var r=diagnose(S.profile);
+  $('diagOut').innerHTML='<div class="card"><h2>Rekomendasi untuk '+esc(S.profile.nama)+'</h2><p class="lead" style="margin:6px 0 14px">Urutan berdasarkan kendala yang Anda pilih dan kondisi usaha saat ini.</p><div style="display:grid;gap:14px">'+
+   r.map(function(x){return '<div class="rec"><div class="score">'+x.s+'</div><div style="flex:1;min-width:0"><h3>'+x.m[0]+'</h3><p style="color:var(--muted)">'+x.m[1]+'</p><div class="bar" style="margin:8px 0"><i style="width:'+x.s+'%"></i></div><a class="btn line" href="#'+x.m[2]+'">Buka modul</a></div></div>'}).join('')+'</div></div>';
+}
+function renderProfile(){
+  $('profileBox').innerHTML=S.profile?'<b>Profil aktif</b>'+esc(S.profile.nama)+'<br>'+esc(S.profile.kat):'<b>Profil aktif</b>Belum ada. Isi Diagnostik Usaha agar rekomendasi sesuai.';
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+$('diagForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var needs=[].slice.call(document.querySelectorAll('#d-needs input:checked')).map(function(i){return i.value});
+  S.profile={nama:$('d-nama').value,kat:$('d-kat').value,produk:$('d-produk').value,prod:+$('d-prod').value,needs:needs,rec:$('d-rec').value,mkt:$('d-mkt').value};
+  try{localStorage.setItem('localink-profile',JSON.stringify(S.profile))}catch(e){}
+  renderProfile();renderDiag();
+  $('diagOut').scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+/* ---------- AI ---------- */
+var QUICK=['Kemasan: MOQ terlalu besar','Buat deskripsi produk Bidara','Ide promosi 4 minggu','Cara mencatat keuangan','Berapa masa kedaluwarsanya?'];
+$('quick').innerHTML=QUICK.map(function(q){return '<button class="chip" type="button">'+q+'</button>'}).join('');
+function reply(q){
+  var t=q.toLowerCase(),who=S.profile?S.profile.nama:'usaha Anda';
+  var out={text:'',meta:'Perlu diperiksa pemilik usaha sebelum diterapkan.',go:null};
+  if(/kedaluwarsa|expired|gizi|kalori|khasiat|manfaat|menyembuhkan|halal|pirt|izin|bpom|sertifikat/.test(t)){
+    out.text='Saya tidak dapat menentukan masa kedaluwarsa, nilai gizi, klaim kesehatan, atau nomor izin untuk produk Anda. Informasi itu harus berasal dari uji produk dan lembaga berwenang.\n\nYang bisa saya bantu: menyiapkan daftar pertanyaan untuk dinas terkait, dan menyusun deskripsi produk tanpa klaim yang belum terverifikasi.';
+    out.meta='Batas jawaban AI: konfirmasi ke pihak berwenang.';
+  }else if(/harga vendor|quotation|penawaran/.test(t)){
+    out.text='Saya tidak mengarang harga vendor. Minta penawaran tertulis dari vendor, catat tanggalnya, lalu masukkan ke Smart Packaging Planner agar bisa dibandingkan.';
+    out.go=['kemasan','Buka Smart Packaging Planner'];
+  }else if(/kemas|moq|pouch|cetak/.test(t)){
+    out.text='Untuk menentukan pilihan yang sesuai untuk '+who+', masukkan jenis produk, jumlah produksi yang dibutuhkan, spesifikasi kemasan saat ini, serta harga penawaran vendor.\n\nSistem akan membandingkan cetak khusus, kemasan standar dengan label, vendor dengan MOQ lebih rendah bila ada, dan pembelian kolektif.';
+    out.go=['kemasan','Buka Smart Packaging Planner'];
+  }else if(/deskripsi|bidara|teh|branding|identitas|cerita/.test(t)){
+    out.text='Draf deskripsi (isi bagian dalam kurung dari data produk asli):\n\n"Health Tea Daun Bidara dari Desa Cinanjung, diolah oleh [nama kelompok]. Komposisi: [isi dari pemilik]. Cara seduh: [isi dari pemilik]. Dikemas di [lokasi produksi]."\n\nSaya sengaja tidak menambah klaim manfaat kesehatan. Tambahkan hanya bila sudah terverifikasi pihak berwenang.';
+    out.meta='Verifikasi komposisi dan klaim dengan KWT dan admin sebelum dipublikasikan.';
+  }else if(/promosi|caption|pemasaran|jual|instagram|konten/.test(t)){
+    out.text='Rencana 4 minggu untuk '+who+':\n\nMinggu 1: foto produk dan cerita asal bahan.\nMinggu 2: proses pembuatan singkat.\nMinggu 3: cara penyajian atau pemakaian.\nMinggu 4: penawaran paket untuk reseller.\n\nContoh caption: "Dibuat warga Cinanjung, dikemas dengan rapi. Pesan lewat [kontak]."';
+  }else if(/catat|keuangan|hpp|laba|untung/.test(t)){
+    out.text='Mulai dari dua hal: catat setiap pemasukan dan pengeluaran, lalu hitung HPP per unit. Dari HPP, tentukan harga jual sesuai target margin.';
+    out.go=['catatan','Buka Catatan Usaha'];
+  }else{
+    out.text='Saya bisa membantu soal kemasan dan MOQ, deskripsi dan branding produk, rencana promosi, serta pencatatan keuangan. Ceritakan produk dan kendala Anda sedikit lebih rinci.';
+    out.meta='';
+  }
+  return out;
+}
+function addMsg(cls,html,meta,go){
+  var d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;
+  if(meta){var m=document.createElement('span');m.className='meta';m.textContent=meta;d.appendChild(m)}
+  if(go){var a=document.createElement('a');a.className='btn line go';a.href='#'+go[0];a.textContent=go[1];d.appendChild(a)}
+  $('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight;
+}
+function ask(q){
+  if(!q.trim())return;
+  addMsg('u',esc(q));
+  setTimeout(function(){var r=reply(q);addMsg('a',esc(r.text),r.meta,r.go)},900);
+}
+addMsg('a','Halo, saya Localink AI. Pilih contoh pertanyaan di atas atau tulis sendiri.');
+$('quick').querySelectorAll('button').forEach(function(b){b.onclick=function(){ask(b.textContent)}});
+$('chatForm').addEventListener('submit',function(e){e.preventDefault();var v=$('chatIn').value;$('chatIn').value='';ask(v)});
+
+/* ---------- kemasan ---------- */
+function dots(el,total,keep){var h='';for(var i=0;i<total;i++)h+='<i'+(i<keep?' class="keep"':'')+'></i>';el.innerHTML=h}
+function buildPlanner(){
+  var h='<thead><tr><th>Opsi</th><th>Q (pouch)</th><th>P (Rp/pouch)</th><th>S setup (Rp)</th><th>D kirim (Rp)</th><th class="num">Modal awal Anda</th><th class="num">Biaya per pouch</th><th class="num">Sisa stok</th><th class="num">Nilai sisa stok</th><th class="num">Habis dalam</th></tr></thead><tbody>';
+  S.opts.forEach(function(o,i){
+    h+='<tr id="pr'+i+'"><td><b>'+o.n+'</b><br><small style="color:var(--muted)">'+o.d+'</small></td>'+
+     ['q','p','s','k'].map(function(f){return '<td><input type="number" min="0" data-i="'+i+'" data-f="'+f+'" value="'+o[f]+'" aria-label="'+f+' opsi '+(i+1)+'"></td>'}).join('')+
+     '<td class="num" data-o="up"></td><td class="num" data-o="un"></td><td class="num" data-o="sur"></td><td class="num" data-o="idle"></td><td class="num" data-o="mo"></td></tr>';
+  });
+  $('ptable').innerHTML=h+'</tbody>';
+  $('ptable').querySelectorAll('input').forEach(function(inp){inp.oninput=function(){S.opts[+inp.dataset.i][inp.dataset.f]=+inp.value||0;calcPlanner()}});
+}
+function calcPlanner(){
+  var need=Math.max(1,+$('p-need').value||1),sales=Math.max(1,+$('p-sales').value||1);
+  $('needBig').textContent=need;
+  var g=Math.round((500-need)/500*100);
+  $('gapPct').textContent=(g>0?g:0)+'%';
+  dots($('dots500'),50,50);dots($('dots100'),50,Math.min(50,Math.round(need/10)));
+  var res=S.opts.map(function(o){
+    var tc=o.q*o.p+o.s+o.k,unit=o.q?tc/o.q:0,up,sur,idle;
+    if(o.share){up=unit*need;sur=0;idle=0}else{up=tc;sur=Math.max(0,o.q-need);idle=sur*unit}
+    var cap=o.share?need:o.q;
+    return {tc:tc,unit:unit,up:up,sur:sur,idle:idle,mo:sur/sales,valid:o.q>0&&o.p>=0&&cap>=need}
+  });
+  var vs=res.filter(function(r){return r.valid});
+  var minUp=Math.min.apply(null,vs.map(function(r){return r.up})),minUn=Math.min.apply(null,vs.map(function(r){return r.unit}));
+  res.forEach(function(r,i){
+    var row=$('pr'+i);
+    row.querySelector('[data-o=up]').textContent=r.valid?rp(r.up):'Q kurang dari kebutuhan';
+    row.querySelector('[data-o=un]').textContent=rp(r.unit);
+    row.querySelector('[data-o=sur]').textContent=r.sur+' pouch';
+    row.querySelector('[data-o=idle]').textContent=rp(r.idle);
+    row.querySelector('[data-o=mo]').textContent=r.sur?r.mo.toFixed(1)+' bln':'-';
+    row.classList.toggle('best',r.valid&&r.up===minUp);
+  });
+  var iUp=res.findIndex(function(r){return r.valid&&r.up===minUp}),iUn=res.findIndex(function(r){return r.valid&&r.unit===minUn});
+  $('pverdict').innerHTML='<div class="card"><h3>Ringkasan</h3><p style="margin-top:8px">Modal awal terendah: <b>'+S.opts[iUp].n+'</b> ('+rp(res[iUp].up)+'). Biaya per pouch terendah: <b>'+S.opts[iUn].n+'</b> ('+rp(res[iUn].unit)+').</p>'+
+   '<p class="lead" style="margin-top:8px;font-size:13px">Hasil hanya sebaik angka yang dimasukkan. .</p></div>';
+}
+$('p-need').oninput=calcPlanner;$('p-sales').oninput=calcPlanner;
+
+/* ---------- catatan ---------- */
+function renderTx(){
+  var inc=0,out=0;S.tx.forEach(function(t){if(t.k==='in')inc+=t.a;else out+=t.a});
+  $('sum').innerHTML='<div class="card"><small>Pemasukan</small><b class="pos">'+rp(inc)+'</b></div><div class="card"><small>Pengeluaran</small><b class="neg">'+rp(out)+'</b></div><div class="card"><small>Selisih</small><b class="'+(inc-out>=0?'pos':'neg')+'">'+rp(inc-out)+'</b></div>';
+  $('txTable').innerHTML='<thead><tr><th>Tanggal</th><th>Keterangan</th><th>Jenis</th><th class="num">Jumlah</th></tr></thead><tbody>'+
+   S.tx.slice().reverse().map(function(t){return '<tr><td>'+t.d+'</td><td>'+esc(t.t)+'</td><td><span class="tag '+(t.k==='in'?'ok':'warn')+'">'+(t.k==='in'?'Masuk':'Keluar')+'</span></td><td class="num">'+rp(t.a)+'</td></tr>'}).join('')+'</tbody>';
+}
+$('txForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var n=new Date();var mo=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][n.getMonth()];
+  S.tx.push({d:String(n.getDate()).padStart(2,'0')+' '+mo,t:$('t-desc').value,k:$('t-type').value,a:+$('t-amt').value});
+  $('t-desc').value='';$('t-amt').value='';renderTx();
+});
+function calcHpp(){
+  var g=function(id){return +$(id).value||0};
+  var tot=g('h-bahan')+g('h-kerja')+g('h-kemas')+g('h-lain'),u=Math.max(1,g('h-unit')),hpp=tot/u,jual=hpp*(1+g('h-margin')/100);
+  $('hppOut').innerHTML='<div class="card"><small>Total biaya batch</small><b>'+rp(tot)+'</b></div><div class="card"><small>HPP per unit</small><b>'+rp(hpp)+'</b></div><div class="card"><small>Harga jual yang disarankan</small><b class="pos">'+rp(jual)+'</b></div>';
+}
+document.querySelectorAll('.hpp').forEach(function(i){i.oninput=calcHpp});
+
+/* ---------- katalog & admin ---------- */
+var mode='kat';
+function renderKat(){
+  var v=S.umkm.filter(function(u){return u.ok});
+  $('katGrid').innerHTML=v.length?v.map(function(u){
+    return '<div class="card umkm"><div class="avatar" style="width:100%;height:96px;font-size:34px">'+u.nama.charAt(0)+'</div><h3>'+u.nama+'</h3><p>'+u.produk+'</p><div class="row"><span class="tag">'+u.kat+'</span><span class="tag ok">Terverifikasi</span></div><small style="color:var(--muted)">Kontak: diisi pemilik usaha</small></div>'}).join(''):'<div class="card">Belum ada produk terverifikasi. Admin dapat menyetujui produk di mode Admin.</div>';
+  $('queue').innerHTML=S.umkm.map(function(u){
+    return '<div class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:10px 12px"><div style="min-width:0"><b>'+u.nama+'</b><br><small style="color:var(--muted)">'+u.produk+'</small></div><button class="btn '+(u.ok?'alt':'')+'" data-id="'+u.id+'">'+(u.ok?'Cabut verifikasi':'Verifikasi')+'</button></div>'}).join('');
+  $('queue').querySelectorAll('button').forEach(function(b){b.onclick=function(){var u=S.umkm.filter(function(x){return x.id==b.dataset.id})[0];u.ok=!u.ok;renderKat();renderKpi()}});
+}
+function renderKpi(){
+  var ver=S.umkm.filter(function(u){return u.ok}).length;
+  var k=[['UMKM onboarding',10,Math.min(10,S.umkm.length)],['Profil usaha lengkap',10,ver],['Menggunakan AI Assistant',8,3],['Menghasilkan materi promosi',8,2],['Mencatat transaksi mingguan',6,2],['Mengikuti asesmen kemasan',5,1],['Admin lokal dilatih',2,1]];
+  $('kpi').innerHTML=k.map(function(x){return '<div><div class="row" style="justify-content:space-between"><span>'+x[0]+'</span><span style="color:var(--muted)">Target '+x[1]+(x[0].indexOf('Profil')===0?' (contoh dari verifikasi di atas: '+x[2]+')':' (contoh: '+x[2]+')')+'</span></div><div class="bar" style="margin-top:6px"><i style="width:'+Math.min(100,x[2]/x[1]*100)+'%"></i></div></div>'}).join('');
+}
+function setMode(m){mode=m;$('katPane').hidden=m!=='kat';$('admPane').hidden=m!=='adm';$('m-kat').setAttribute('aria-pressed',m==='kat');$('m-adm').setAttribute('aria-pressed',m==='adm')}
+$('m-kat').onclick=function(){setMode('kat')};$('m-adm').onclick=function(){setMode('adm')};
+
+/* ---------- init ---------- */
+if(S.profile){try{$('d-nama').value=S.profile.nama;$('d-kat').value=S.profile.kat;$('d-produk').value=S.profile.produk;$('d-prod').value=S.profile.prod}catch(e){}}
+renderDir();renderProfile();renderDiag();buildPlanner();calcPlanner();renderTx();calcHpp();renderKat();renderKpi();route();
+})();
+</script>
+<script>
+(function () {
+  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id) { return document.getElementById(id); }
+
+  // 1. Bola warna melayang di latar halaman
+  ['a', 'b'].forEach(function (k) {
+    var d = document.createElement('div');
+    d.className = 'bgfloat ' + k;
+    document.body.appendChild(d);
+  });
+
+  // 2. Garis progres scroll di atas
+  var bar = document.createElement('div');
+  bar.id = 'prog';
+  document.body.appendChild(bar);
+  addEventListener('scroll', function () {
+    var h = document.documentElement, m = h.scrollHeight - h.clientHeight;
+    bar.style.width = (m > 0 ? (h.scrollTop / m) * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. Tombol mengambang "Tanya Localink AI"
+  var fab = document.createElement('a');
+  fab.className = 'fab';
+  fab.href = '#ai';
+  fab.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Tanya Localink AI';
+  document.body.appendChild(fab);
+
+  // 4. Daun melayang di kotak hijau beranda
+  function leaves() {
+    var hero = document.querySelector('.hero');
+    if (!hero || hero.querySelector('.leaf')) return;
+    [['right:8%;top:12%;width:54px', '0s'], ['right:26%;top:58%;width:34px', '-3s'], ['right:4%;bottom:10%;width:42px', '-5.5s']].forEach(function (c) {
+      var s = document.createElement('span');
+      s.className = 'leaf';
+      s.style.cssText = c[0] + ';animation-delay:' + c[1];
+      s.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4C9 4 4 9 4 17c0 1 .1 2 .3 3C6 14 9 11 14 9c-4 3-6 6-7 11 9 0 13-6 13-16z"/></svg>';
+      hero.appendChild(s);
+    });
+  }
+
+  // 5. Angka beranda berhitung naik
+  function countUp() {
+    document.querySelectorAll('.metric b').forEach(function (el) {
+      var m = (el.dataset.final || el.textContent).match(/^(\D*)(\d+)$/);
+      if (!m) return;
+      if (!el.dataset.final) el.dataset.final = el.textContent;
+      if (RM) return;
+      var pre = m[1], to = +m[2], t0 = performance.now(), d = 900;
+      (function f(t) {
+        var q = Math.min(1, (t - t0) / d);
+        el.textContent = pre + Math.round(to * (1 - Math.pow(1 - q, 3)));
+        if (q < 1) requestAnimationFrame(f);
+      })(t0);
+      setTimeout(function () { el.textContent = el.dataset.final; }, d + 200);
+    });
+  }
+
+  // 6. Urutan muncul kartu tiap pindah layar
+  function onRoute() {
+    var h = (location.hash || '#beranda').slice(1);
+    var v = $('v-' + h);
+    if (v) [].forEach.call(v.children, function (c, i) { c.style.setProperty('--i', i); });
+    fab.classList.toggle('off', h === 'ai');
+    if (h === 'beranda' || !v) countUp();
+  }
+  addEventListener('hashchange', onRoute);
+  leaves();
+  onRoute();
+
+  // 7. Titik "sedang mengetik" di chat AI
+  var chat = $('chat');
+  if (chat) {
+    new MutationObserver(function (list) {
+      list.forEach(function (r) {
+        [].forEach.call(r.addedNodes, function (n) {
+          if (!n.classList || n.classList.contains('typing')) return;
+          var old = chat.querySelector('.typing');
+          if (n.classList.contains('u')) {
+            if (old) old.remove();
+            var t = document.createElement('div');
+            t.className = 'msg a typing';
+            t.innerHTML = '<i></i><i></i><i></i>';
+            chat.appendChild(t);
+            chat.scrollTop = chat.scrollHeight;
+          } else if (n.classList.contains('a') && old) {
+            old.remove();
+          }
+        });
+      });
+    }).observe(chat, { childList: true });
+  }
+
+  // 8. Kartu UMKM miring mengikuti kursor (hanya di komputer)
+  if (!RM && matchMedia('(hover: hover)').matches) {
+    var last = null;
+    document.addEventListener('mousemove', function (e) {
+      var c = e.target.closest && e.target.closest('.umkm');
+      if (last && last !== c) { last.style.transform = ''; last = null; }
+      if (!c) return;
+      var r = c.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+      c.style.transform = 'perspective(700px) rotateY(' + x * 8 + 'deg) rotateX(' + -y * 8 + 'deg) translateY(-3px)';
+      last = c;
+    });
+  }
+})();
+</script>
